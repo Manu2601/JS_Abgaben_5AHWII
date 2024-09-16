@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Example 05: OO-Programming</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="../../js_examples/js_only/data/teams_fifa22.js"></script>
+    <script src="../../js_examples/js_only/data/players_fifa23.js"></script>
+</head>
+<body class="container mt-5">
+    <div class="text-center">
+        <h1>FIFA Team Konfigurator</h1>
+        <p>Press <b>F12</b> to see the results</p>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="teams">Select Team</label>
+                <select id="teams" class="form-control" onchange="change_teams(event)">
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="team_members">Select Team Member</label>
+                <select id="team_members" class="form-control">
+                </select>
+            </div>
+        </div>
+        <div class="col-md-6 text-center">
+            <img id="player_img" class="img-fluid" alt="Player Image">
+            <h2 id="player_name"></h2>
+            <p id="player_age"></p>
+            <p id="player_nationality"></p>
+            <p id="player_height"></p>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <h3>Team 1</h3>
+            <select id="team1" class="form-control" multiple size="10"></select>
+            <button class="btn btn-primary mt-2" onclick="addToTeam('team1')">Add to Team 1</button>
+            <button class="btn btn-danger mt-2" onclick="removeFromTeam('team1')">Remove from Team 1</button>
+        </div>
+        <div class="col-md-6">
+            <h3>Team 2</h3>
+            <select id="team2" class="form-control" multiple size="10"></select>
+            <button class="btn btn-primary mt-2" onclick="addToTeam('team2')">Add to Team 2</button>
+            <button class="btn btn-danger mt-2" onclick="removeFromTeam('team2')">Remove from Team 2</button>
+        </div>
+    </div>
+
+    <script>
+    function addToTeam(teamId) {
+        let team_members_sel = document.getElementById("team_members");
+        let selectedPlayerId = team_members_sel.value;
+        let selectedPlayerName = team_members_sel.options[team_members_sel.selectedIndex].text;
+
+        if (selectedPlayerId) {
+            let teamSelect = document.getElementById(teamId);
+            
+            let teamOptions = Array.from(teamSelect.options);
+            if (teamOptions.length >= 11) {
+                alert("A team cannot have more than 11 players.");
+                return;
+            }
+            let isPlayerInTeam = teamOptions.some(option => option.value === selectedPlayerId);
+            if (!isPlayerInTeam) {
+                let option = document.createElement("option");
+                option.textContent = selectedPlayerName;
+                option.value = selectedPlayerId;
+                teamSelect.appendChild(option);
+            } else {
+                alert("Player is already in the team.");
+            }
+        }
+    }
+
+    function removeFromTeam(teamId) {
+        let teamSelect = document.getElementById(teamId);
+        let selectedPlayerId = teamSelect.value;
+        if (selectedPlayerId) {
+            let option = teamSelect.querySelector(`option[value="${selectedPlayerId}"]`);
+            teamSelect.removeChild(option);
+        }
+    }
+
+
+
+    function change_teams(e) {
+        let teams_sel = e.target;
+        let v = teams_sel.value;
+        let t = teams_sel.options[teams_sel.selectedIndex].text;
+        console.log(v + t + e);
+
+        let team_members_sel = document.getElementById("team_members");
+        let current_players = players.filter(p => p.Club === t);
+        console.log(current_players);
+        team_members_sel.innerHTML = "";
+        current_players.forEach(d => team_members_sel.add(new Option(d.Name, d.ID)));
+
+        if (team_members_sel.options.length > 0) {
+            team_members_sel.selectedIndex = 0;
+            team_members_sel.dispatchEvent(new Event('change'));
+        }
+    }
+
+    function change_team_player(e) {
+        let player_sel = e.target;
+        let v = player_sel.value;
+        let t = player_sel.options[player_sel.selectedIndex].text;
+
+        let curr_player = players.find(p => p.Name === t);
+        let player_img = document.getElementById("player_img");
+        player_img.src = curr_player.Photo;
+        let player_name = document.getElementById("player_name");
+        player_name.innerHTML = curr_player.Name;
+        let player_age = document.getElementById("player_age");
+        player_age.innerHTML = "Age: " + curr_player.Age;
+        let player_nationality = document.getElementById("player_nationality");
+        player_nationality.innerHTML = "Nationality: " + curr_player.Nationality;
+        let player_height = document.getElementById("player_height");
+        player_height.innerHTML = "Height: " + curr_player.Height;
+    }
+
+    let teams_sel = document.getElementById("teams");
+
+    teams.forEach(d => teams_sel.add(new Option(d.Name, d.ID)));
+    teams_sel.addEventListener("change", change_teams);
+
+    let team_members_sel = document.getElementById("team_members");
+    team_members_sel.addEventListener("change", change_team_player);
+
+    if (teams_sel.options.length > 0) {
+        teams_sel.selectedIndex = 0;
+        teams_sel.dispatchEvent(new Event('change'));
+    }
+  
+    </script>
+</body>
+</html>
