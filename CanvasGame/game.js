@@ -59,11 +59,16 @@ function sprite(width, height, color, x, y) {
         } else if (this.color === "blue") {
             let collision = checkCollision();
             if (collision) {
-                alert("Game Over");
                 clearInterval(game.interval);
                 clearInterval(game.intervalNewEnemy);
                 clearInterval(game.intervalBonus);
                 clearInterval(game.intervalScore); 
+                score = 0;
+                timer = 0;
+                game.enemies = [];
+                enimies = [];
+                bonusstein = null;
+                game.keyCode = -1;
             }
             ctx.drawImage(imageDevil, this.x, this.y, this.width, this.height);
         } else if (this.color === "cool") {
