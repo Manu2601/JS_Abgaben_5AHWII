@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangman</title>
+    <script src="https://unpkg.com/vue@3"></script>
+    <script src="https://unpkg.com/vue-select@latest"></script>
+    <script src="C:\Users\Raffl Manuel\OneDrive - HTL Anichstrasse\HTL\5AHWII\SWP\JavaScript\JS_Abgaben_5AHWII\Hangman\data\wordlist.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/vue-select@latest/dist/vue-select.css"/>
+</head>
+<body>
+    <div id="app">
+        <h1>Hangman</h1>
+        <p>Guess the word: {{ showedText }}</p>
+        <p v-if="showCheat">Cheat: {{ randomWord }}</p>
+        <img :src="current_hangman_state"/> <br>
+        <button v-for="letter in letters" :key="letter" @click="check(letter)" :disabled="guessedLetters.includes(letter) || gameOver">{{ letter }}</button>
+        <p v-if="gameOver && !gameWon">You lost! Try again.</p>
+        <p v-if="gameWon">You won! Congratulations!</p>
+        <button @click="restartGame" v-if="gameOver || gameWon">Restart Game</button>
+        <p>Time: {{ timeElapsed }} seconds</p>
+        <p>Errors: {{ state }}</p>
+        
+        <h2>Highscores</h2>
+        <table border="1">
+            <tr>
+                <th>Time</th>
+                <th>Errors</th>
+            </tr>
+            <tr v-for="score in highScores" :key="score.time">
+                <td>{{ score.time }} seconds</td>
+                <td>{{ score.errors }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        createApp({
+            data() {
+                return {
+                    letters: Array.from(Array(26)).map((e, i) => String.fromCharCode(i + 65)),
+                    wordlist: wordlist,
+                    current_hangman_state: "C:\\Users\\Raffl Manuel\\OneDrive - HTL Anichstrasse\\HTL\\5AHWII\\SWP\\JavaScript\\JS_Abgaben_5AHWII\\Hangman\\data\\0.jpg",
+                    randomWord: wordlist[Math.floor(Math.random() * wordlist.length)],
+                    guessedLetters: [],
+                    state: 0,
+                    gameOver: false,
+                    gameWon: false,
+                    timer: null,
+                    timeElapsed: 0,
+                    highScores: [],
+                    showCheat: false
+                };
+            },
+            computed: {
+                showedText() {
+                    return this.randomWord
+                        .split('')
+                        .map(letter => (this.guessedLetters.includes(letter.toUpperCase()) ? letter : "_"))
+                        .join(' ');
+                }
+            },
+            methods: {
+                check(letter) {
+                    if (this.randomWord.toUpperCase().includes(letter)) {
+                        console.log("Correct");
+                    } else {
+                        console.log("Wrong");
+                        this.state++;
+                        this.current_hangman_state = `C:\\Users\\Raffl Manuel\\OneDrive - HTL Anichstrasse\\HTL\\5AHWII\\SWP\\JavaScript\\JS_Abgaben_5AHWII\\Hangman\\data\\${this.state}.jpg`;
+                    }
+                    this.guessedLetters.push(letter);
+
+                    if (this.state === 10) {
+                        this.gameOver = true;
+                        alert("You lost!");
+                        clearInterval(this.timer); 
+                    }
+
+                    const uniqueLetters = new Set(this.randomWord.toUpperCase());
+                    const allGuessed = [...uniqueLetters].every(letter => this.guessedLetters.includes(letter));
+                    if (allGuessed) {
+                        this.gameWon = true;
+                        alert("You won! Congratulations!");
+                        clearInterval(this.timer); 
+                        this.saveHighscore();
+                    }
+                },
+                restartGame() {
+                    this.randomWord = wordlist[Math.floor(Math.random() * wordlist.length)];
+                    this.guessedLetters = [];
+                    this.state = 0;
+                    this.gameOver = false;
+                    this.gameWon = false;
+                    this.current_hangman_state = "C:\\Users\\Raffl Manuel\\OneDrive - HTL Anichstrasse\\HTL\\5AHWII\\SWP\\JavaScript\\JS_Abgaben_5AHWII\\Hangman\\data\\0.jpg";
+                    this.timeElapsed = 0;
+                    clearInterval(this.timer);
+                    this.startTimer();
+                },
+                startTimer() {
+                    this.timer = setInterval(() => {
+                        this.timeElapsed++;
+                    }, 1000);
+                },
+                saveHighscore() {
+                    const score = {
+                        time: this.timeElapsed,
+                        errors: this.state
+                    };
+                    const storedScores = JSON.parse(localStorage.getItem("highScores")) || [];
+                    storedScores.push(score);
+                    storedScores.sort((a, b) => a.time - b.time || a.errors - b.errors);
+                    localStorage.setItem("highScores", JSON.stringify(storedScores.slice(0, 5)));
+                    this.highScores = storedScores.slice(0, 5);
+                },
+                loadHighScores() {
+                    const storedScores = JSON.parse(localStorage.getItem("highScores")) || [];
+                    this.highScores = storedScores.slice(0, 5);
+                }
+            },
+            mounted() {
+                this.loadHighScores();
+                this.startTimer();
+                window.addEventListener("keydown", () => {
+                    if (event.key === "."){
+                        this.showCheat = !this.showCheat;
+                    }
+                   
+                });
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
